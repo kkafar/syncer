@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand, Args};
 use std::path::PathBuf;
 
+
 #[derive(Parser)]
 #[command(author, version, about, long_about)]
 pub struct Cli {
@@ -8,11 +9,13 @@ pub struct Cli {
     pub command: Command,
 }
 
+
 #[derive(Debug, Subcommand)]
 pub enum Command {
     File(FileArgs),
     Server(ServerArgs),
 }
+
 
 #[derive(Debug, Args)]
 #[command(args_conflicts_with_subcommands = true)]
@@ -21,6 +24,7 @@ pub struct FileArgs {
     #[command(subcommand)]
     pub command: FileCommand,
 }
+
 
 #[derive(Debug, Args)]
 #[command(args_conflicts_with_subcommands = true)]
@@ -43,8 +47,10 @@ pub enum FileCommand {
     }
 }
 
+
 #[derive(Debug, Subcommand)]
 pub enum ServerCommand {
     Start,
     Stop,
 }
+
