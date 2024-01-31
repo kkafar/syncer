@@ -15,7 +15,7 @@ jobs:
   build-release:
     runs-on: ubuntu-latest
     concurrency:
-      group: ci-build-run-${{ github.ref }}
+      group: ci-build-release-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
   build-debug:
     runs-on: ubuntu-latest
     concurrency:
-      group: ci-build-run-${{ github.ref }}
+      group: ci-build-debug-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
