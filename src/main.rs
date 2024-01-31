@@ -21,7 +21,6 @@ fn main() {
     let binary_digest = md5::compute(binary_content);
     println!("{binary_digest:?}");
 
-
     let cli = cli::Cli::parse();
 
     match cli.command {
