@@ -24,7 +24,7 @@ jobs:
       - name: Update toolchain
         run: rustup update
       - name: Install protoc
-        run: apt install -y protobuf-compiler && run protoc --version
+        uses: arduino/setup-protoc@v3
       - name: Build
         run: cargo build --release
   build-debug:
@@ -39,7 +39,7 @@ jobs:
       - name: Update toolchain
         run: rustup update
       - name: Install protoc
-        run: apt install -y protobuf-compiler && run protoc --version
+        uses: arduino/setup-protoc@v3
       - name: Build
         run: cargo build
 
