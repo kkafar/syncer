@@ -23,6 +23,8 @@ jobs:
           submodules: true
       - name: Update toolchain
         run: rustup update
+      - name: Install protoc
+        run: apt install -y protobuf-compiler && run protoc --version
       - name: Build
         run: cargo build --release
   build-debug:
@@ -36,6 +38,8 @@ jobs:
           submodules: true
       - name: Update toolchain
         run: rustup update
+      - name: Install protoc
+        run: apt install -y protobuf-compiler && run protoc --version
       - name: Build
         run: cargo build
 
