@@ -1,0 +1,17 @@
+syntax = "proto3";
+package syncer;
+
+service FileTransfer {
+  rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
+  // rpc AddFile (AddFileRequest) returns (AddFileResponse);
+  // rpc RemoveFile (RemoveFileRequest) returns (RemoveFileResponse);
+}
+
+message ListFilesRequest {
+  string request = 1; 
+}
+
+message ListFilesResponse {
+  string response = 1; 
+}
+

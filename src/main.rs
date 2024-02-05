@@ -1,16 +1,17 @@
 mod cli;
-mod server;
 mod env;
 mod logging;
 
 use clap::Parser;
 use log::info;
+use log::trace;
 use md5;
 use core::panic;
 use std::fs;
 use std::path;
 use xdg;
 use rusqlite;
+
 
 
 fn main() {
@@ -29,8 +30,6 @@ fn main() {
     // println!("{binary_digest:?}");
     //
 
-    info!("syncer start");
-
     let cli = cli::Cli::parse();
 
     let _handle = match logging::init() {
@@ -45,20 +44,25 @@ fn main() {
         cli::Command::File(subcmd) => {
             match subcmd.command {
                 cli::FileCommand::Add { file } => {
+                    trace!("Running FileAdd action");
 
                 },
                 cli::FileCommand::Remove { file } => {
+                    trace!("Running FileRemove action");
 
+                },
+                cli::FileCommand::List => {
+                    trace!("Running FileList action")
                 },
             }
         }
         cli::Command::Server(subcmd) => {
             match subcmd.command {
                 cli::ServerCommand::Start => {
-
+                    trace!("Running ServerStart action");
                 },
                 cli::ServerCommand::Stop => {
-
+                    trace!("Running ServerStop action");
                 },
             }
         }
