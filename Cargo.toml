@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "syncer-server"
+name = "server"
+test = true
+bench = false
+
+[[bin]]
+name = "client"
 test = true
 bench = false
 
