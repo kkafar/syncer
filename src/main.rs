@@ -1,15 +1,17 @@
 mod cli;
-mod server;
+mod env;
+mod logging;
 
 use clap::Parser;
+use log::info;
+use log::trace;
 use md5;
 use core::panic;
 use std::fs;
 use std::path;
 use xdg;
+use rusqlite;
 
-
-const APP_PREFIX: &str = "syncer";
 
 
 fn main() {
@@ -26,41 +28,43 @@ fn main() {
     // println!("{binary_content:?}");
     // let binary_digest = md5::compute(binary_content);
     // println!("{binary_digest:?}");
-
-    let Ok(xdg_dirs) = xdg::BaseDirectories::new() else {
-        panic!("Could not create xdg::BaseDirectories, do you have HOME environment variable set?");
-    };
+    //
 
     let cli = cli::Cli::parse();
+
+    let _handle = match logging::init() {
+        Ok(handle) => handle,
+        Err(err) => panic!("{err:?}")
+    };
+
+    let xdg_dirs = env::ensure_file_structure_exists();
+
 
     match cli.command {
         cli::Command::File(subcmd) => {
             match subcmd.command {
                 cli::FileCommand::Add { file } => {
+                    trace!("Running FileAdd action");
 
                 },
                 cli::FileCommand::Remove { file } => {
+                    trace!("Running FileRemove action");
 
+                },
+                cli::FileCommand::List => {
+                    trace!("Running FileList action")
                 },
             }
         }
         cli::Command::Server(subcmd) => {
             match subcmd.command {
                 cli::ServerCommand::Start => {
-
+                    trace!("Running ServerStart action");
                 },
                 cli::ServerCommand::Stop => {
-
+                    trace!("Running ServerStop action");
                 },
             }
         }
     }
-
-
-    let Ok(state_home) = xdg_dirs.create_state_directory(path::Path::new(APP_PREFIX)) else {
-        panic!("Could not create state directory. Make sure ... TODO");
-    };
-
-    println!("XDG_STATE_HOME={state_home:?}")
-
 }

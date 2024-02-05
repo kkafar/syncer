@@ -44,7 +44,8 @@ pub enum FileCommand {
     Remove {
         #[arg(short, long)]
         file: PathBuf,
-    }
+    },
+    List,
 }
 
 
