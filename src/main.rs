@@ -3,14 +3,14 @@ mod env;
 mod logging;
 
 use clap::Parser;
-use log::info;
+
 use log::trace;
-use md5;
+
 use core::panic;
-use std::fs;
-use std::path;
-use xdg;
-use rusqlite;
+
+
+
+
 
 
 
@@ -37,17 +37,17 @@ fn main() {
         Err(err) => panic!("{err:?}")
     };
 
-    let xdg_dirs = env::ensure_file_structure_exists();
+    let _xdg_dirs = env::ensure_file_structure_exists();
 
 
     match cli.command {
         cli::Command::File(subcmd) => {
             match subcmd.command {
-                cli::FileCommand::Add { file } => {
+                cli::FileCommand::Add { file: _ } => {
                     trace!("Running FileAdd action");
 
                 },
-                cli::FileCommand::Remove { file } => {
+                cli::FileCommand::Remove { file: _ } => {
                     trace!("Running FileRemove action");
 
                 },

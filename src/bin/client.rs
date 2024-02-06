@@ -1,8 +1,8 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+
 
 use anyhow::{self, Ok};
 use client_stub::{file_transfer_client::FileTransferClient, ListFilesRequest};
-use tonic::transport::Uri;
+
 
 pub mod client_stub {
     tonic::include_proto!("syncer");

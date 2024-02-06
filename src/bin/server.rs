@@ -1,11 +1,11 @@
-use std::num::NonZeroU16;
+
 use std::path::PathBuf;
-use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
+use std::net::{Ipv4Addr, SocketAddrV4, TcpListener};
 use log::trace;
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
-use tonic::{Request, Response, Status};
-use anyhow;
+use tonic::{Request, Status};
+
 
 use self::server_stub::file_transfer_server::FileTransfer;
 use self::server_stub::{ListFilesRequest, ListFilesResponse};
@@ -36,13 +36,13 @@ impl Server {
 
 
     pub fn run(self) {
-        let listener = TcpListener::bind(self.sck_addr).unwrap();
+        let _listener = TcpListener::bind(self.sck_addr).unwrap();
     }
 }
 
 #[tonic::async_trait]
 impl FileTransfer for Server {
-    async fn list_files(&self, request: Request<ListFilesRequest>) -> Result<tonic::Response<ListFilesResponse>, Status> {
+    async fn list_files(&self, _request: Request<ListFilesRequest>) -> Result<tonic::Response<ListFilesResponse>, Status> {
         let reply = ListFilesResponse {
             response: "This is an response from server".to_owned(),
         };

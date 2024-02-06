@@ -1,8 +1,8 @@
 use core::panic;
-use std::fs;
+
 use std::path::Path;
 use log::trace;
-use xdg;
+
 
 
 pub const APP_PREFIX: &str = "syncer";
