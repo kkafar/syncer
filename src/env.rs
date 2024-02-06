@@ -1,12 +1,8 @@
 use core::panic;
-use std::fs;
-use std::path::Path;
 use log::trace;
-use xdg;
-
+use std::path::Path;
 
 pub const APP_PREFIX: &str = "syncer";
-
 
 pub fn ensure_data_files_exist(dirs: &xdg::BaseDirectories) {
     match dirs.create_data_directory(Path::new(APP_PREFIX)) {
@@ -19,7 +15,6 @@ pub fn ensure_data_files_exist(dirs: &xdg::BaseDirectories) {
     };
 }
 
-
 pub fn ensure_state_files_exist(dirs: &xdg::BaseDirectories) {
     match dirs.create_state_directory(Path::new(APP_PREFIX)) {
         Err(err) => {
@@ -30,7 +25,6 @@ pub fn ensure_state_files_exist(dirs: &xdg::BaseDirectories) {
         }
     };
 }
-
 
 pub fn ensure_file_structure_exists() -> xdg::BaseDirectories {
     trace!("Creating file structure");
@@ -43,4 +37,3 @@ pub fn ensure_file_structure_exists() -> xdg::BaseDirectories {
 
     xdg_dirs
 }
-

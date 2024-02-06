@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/ci.yaml'
+      - 'proto/**'
   workflow_dispatch:
 env:
   CARGO_TERM_COLOR: always
@@ -42,6 +43,36 @@ jobs:
         uses: arduino/setup-protoc@v3
       - name: Build
         run: cargo build
+  clippy-check:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-clippy-check-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        run: rustup update
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features
+  fmt-check:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-fmt-check-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        run: rustup update
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+      - name: Run fmt
+        run: cargo fmt -v --check
 
   # test:
   #   runs-on: ubuntu-latest
