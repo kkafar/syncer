@@ -1,7 +1,7 @@
-use log::trace;
+
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
-use std::net::{Ipv4Addr, SocketAddrV4, TcpListener};
+use std::net::{SocketAddrV4};
 use std::path::PathBuf;
 use tonic::{Request, Status};
 
@@ -30,7 +30,7 @@ impl ServerProxy {
     }
 
     pub async fn run(self) -> anyhow::Result<()> {
-        let addr = self.sck_addr.clone();
+        let addr = self.sck_addr;
         tonic::transport::Server::builder()
             .add_service(FileTransferServer::new(self))
             .serve(std::net::SocketAddr::V4(addr))

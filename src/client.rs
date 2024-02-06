@@ -1,5 +1,5 @@
-use anyhow::{self, Ok};
-use client_stub::{file_transfer_client::FileTransferClient, ListFilesRequest};
+use anyhow::{self};
+use client_stub::{file_transfer_client::FileTransferClient};
 
 pub mod client_stub {
     tonic::include_proto!("syncer");
@@ -7,7 +7,7 @@ pub mod client_stub {
 
 
 pub struct SyncerClientProxy {
-    server_uri: String,
+    _server_uri: String,
     pub client: FileTransferClient<tonic::transport::Channel>,
 }
 
@@ -15,7 +15,7 @@ pub struct SyncerClientProxy {
 impl SyncerClientProxy {
     pub async fn new(server_uri: String) -> anyhow::Result<Self> {
         anyhow::Ok(Self {
-            server_uri: server_uri.clone(),
+            _server_uri: server_uri.clone(),
             client: FileTransferClient::connect(server_uri).await?,
         })
     }

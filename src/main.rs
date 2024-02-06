@@ -7,7 +7,7 @@ mod client;
 use clap::Parser;
 use client::SyncerClientProxy;
 use server::ServerProxy;
-use core::panic;
+
 use std::net::{Ipv4Addr, SocketAddrV4};
 use log::trace;
 use anyhow::{self, Ok};
