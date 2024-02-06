@@ -3,8 +3,8 @@ package syncer;
 
 service FileTransfer {
   rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
-  // rpc AddFile (AddFileRequest) returns (AddFileResponse);
-  // rpc RemoveFile (RemoveFileRequest) returns (RemoveFileResponse);
+  rpc AddFile (AddFileRequest) returns (AddFileResponse);
+  rpc RemoveFile (RemoveFileRequest) returns (RemoveFileResponse);
 }
 
 message ListFilesRequest {
@@ -15,3 +15,18 @@ message ListFilesResponse {
   string response = 1; 
 }
 
+message AddFileRequest {
+  string file_path = 1;
+}
+
+message AddFileResponse {
+  bool success = 1;
+}
+
+message RemoveFileRequest {
+  string file_path = 1;
+}
+
+message RemoveFileResponse {
+  bool success = 1;
+}
