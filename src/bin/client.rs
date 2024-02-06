@@ -1,8 +1,5 @@
-
-
 use anyhow::{self, Ok};
 use client_stub::{file_transfer_client::FileTransferClient, ListFilesRequest};
-
 
 pub mod client_stub {
     tonic::include_proto!("syncer");
