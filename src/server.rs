@@ -1,7 +1,6 @@
-use log::trace;
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
-use std::net::{Ipv4Addr, SocketAddrV4, TcpListener};
+use std::net::SocketAddrV4;
 use std::path::PathBuf;
 use tonic::{Request, Status};
 
@@ -18,25 +17,28 @@ pub struct ServerDescription {
 }
 
 #[derive(Debug)]
-pub struct Server {
+pub struct ServerProxy {
     sck_addr: SocketAddrV4,
 }
 
-impl Server {
-    pub fn new(local_port: u16) -> Self {
-        trace!("Creating new server instance. Binding to local port: {local_port}");
-        Self {
-            sck_addr: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), local_port),
-        }
+impl ServerProxy {
+    pub fn new(sck_addr: SocketAddrV4) -> Self {
+        Self { sck_addr }
     }
 
-    pub fn run(self) {
-        let _listener = TcpListener::bind(self.sck_addr).unwrap();
+    pub async fn run(self) -> anyhow::Result<()> {
+        let addr = self.sck_addr;
+        tonic::transport::Server::builder()
+            .add_service(FileTransferServer::new(self))
+            .serve(std::net::SocketAddr::V4(addr))
+            .await?;
+
+        Ok(())
     }
 }
 
 #[tonic::async_trait]
-impl FileTransfer for Server {
+impl FileTransfer for ServerProxy {
     async fn list_files(
         &self,
         _request: Request<ListFilesRequest>,
@@ -47,18 +49,4 @@ impl FileTransfer for Server {
 
         Ok(tonic::Response::new(reply))
     }
-}
-
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let addr = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8080);
-    let addr = std::net::SocketAddr::V4(addr);
-    let server = Server::new(8080);
-
-    tonic::transport::Server::builder()
-        .add_service(FileTransferServer::new(server))
-        .serve(addr)
-        .await?;
-
-    Ok(())
 }
