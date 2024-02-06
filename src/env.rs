@@ -53,7 +53,9 @@ impl AppDirectories {
     fn ensure_file_structure_exists() -> xdg::BaseDirectories {
         trace!("Creating file structure");
         let Ok(xdg_dirs) = xdg::BaseDirectories::new() else {
-            panic!("Could not create xdg::BaseDirectories, do you have HOME environment variable set?");
+            panic!(
+                "Could not create xdg::BaseDirectories, do you have HOME environment variable set?"
+            );
         };
 
         AppDirectories::ensure_data_files_exist(&xdg_dirs);
@@ -62,4 +64,3 @@ impl AppDirectories {
         xdg_dirs
     }
 }
-

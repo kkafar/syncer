@@ -3,10 +3,10 @@ pub mod db;
 use log::info;
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
-use tokio::sync::Mutex;
 use std::net::SocketAddrV4;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tonic::{Request, Status};
 
 use self::server_stub::file_transfer_server::FileTransfer;

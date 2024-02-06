@@ -1,8 +1,7 @@
 use core::panic;
-use std::path::{Path, PathBuf};
 use log::error;
 use rusqlite::Connection;
-
+use std::path::{Path, PathBuf};
 
 pub struct DatabaseProxy {
     path: PathBuf,
@@ -17,18 +16,12 @@ impl DatabaseProxy {
                 return Err(anyhow::Error::new(err));
             }
         };
-        anyhow::Ok(Self {
-            path,
-            conn,
-        })
+        anyhow::Ok(Self { path, conn })
     }
 
     fn create_groups_table(&mut self) -> anyhow::Result<()> {
         let query = include_str!("../../query/create_groups_table.sql");
-        let result = self.conn.execute(
-            query,
-            []
-        );
+        let result = self.conn.execute(query, []);
         result.map(|_| ()).map_err(|err| anyhow::Error::new(err))
     }
 
@@ -46,8 +39,6 @@ impl DatabaseProxy {
         if let Err(err) = self.create_file_table() {
             error!("Creating file table failed with error {err:?}");
             panic!("Creating file table failed with error {err:?}");
-
         }
     }
 }
-

@@ -1,20 +1,20 @@
 mod cli;
 mod client;
+mod context;
 mod env;
 mod logging;
 mod server;
-mod context;
 
 use clap::Parser;
 use client::SyncerClientProxy;
-use server::{db::DatabaseProxy, ServerProxy};
 use context::Context;
+use server::{db::DatabaseProxy, ServerProxy};
 
 use anyhow;
 use log::{error, info, trace};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
-use crate::client::client_stub::{ AddFileRequest, ListFilesRequest, RemoveFileRequest };
+use crate::client::client_stub::{AddFileRequest, ListFilesRequest, RemoveFileRequest};
 
 async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
     // When running server we have to make sure that the database exists
