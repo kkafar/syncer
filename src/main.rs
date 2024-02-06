@@ -1,24 +1,25 @@
 mod cli;
+mod client;
 mod env;
 mod logging;
 mod server;
-mod client;
 
 use clap::Parser;
 use client::SyncerClientProxy;
 use server::ServerProxy;
 
-use std::net::{Ipv4Addr, SocketAddrV4};
-use log::trace;
 use anyhow::{self, Ok};
+use log::trace;
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 use crate::client::client_stub::ListFilesRequest;
-
 
 async fn handle_server_action(cmd: cli::ServerCommand) -> anyhow::Result<()> {
     match cmd {
         cli::ServerCommand::Start => {
-            ServerProxy::new(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8080)).run().await?;
+            ServerProxy::new(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8080))
+                .run()
+                .await?;
         }
         cli::ServerCommand::Stop => {
             trace!("Running ServerStop action");

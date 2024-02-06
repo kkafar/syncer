@@ -1,7 +1,6 @@
-
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
-use std::net::{SocketAddrV4};
+use std::net::SocketAddrV4;
 use std::path::PathBuf;
 use tonic::{Request, Status};
 
@@ -24,9 +23,7 @@ pub struct ServerProxy {
 
 impl ServerProxy {
     pub fn new(sck_addr: SocketAddrV4) -> Self {
-        Self {
-            sck_addr,
-        }
+        Self { sck_addr }
     }
 
     pub async fn run(self) -> anyhow::Result<()> {
@@ -38,7 +35,6 @@ impl ServerProxy {
 
         Ok(())
     }
-
 }
 
 #[tonic::async_trait]
@@ -54,4 +50,3 @@ impl FileTransfer for ServerProxy {
         Ok(tonic::Response::new(reply))
     }
 }
-

@@ -1,16 +1,14 @@
 use anyhow::{self};
-use client_stub::{file_transfer_client::FileTransferClient};
+use client_stub::file_transfer_client::FileTransferClient;
 
 pub mod client_stub {
     tonic::include_proto!("syncer");
 }
 
-
 pub struct SyncerClientProxy {
     _server_uri: String,
     pub client: FileTransferClient<tonic::transport::Channel>,
 }
-
 
 impl SyncerClientProxy {
     pub async fn new(server_uri: String) -> anyhow::Result<Self> {
@@ -20,7 +18,6 @@ impl SyncerClientProxy {
         })
     }
 }
-
 
 // #[tokio::main]
 // async fn main() -> anyhow::Result<()> {
