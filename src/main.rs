@@ -4,6 +4,7 @@ mod context;
 mod env;
 mod logging;
 mod server;
+mod util;
 
 use clap::Parser;
 use client::SyncerClientProxy;
@@ -35,7 +36,7 @@ async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyh
     Ok(())
 }
 
-async fn handle_client_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
+async fn handle_client_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
     let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
         Ok(client_proxy) => client_proxy,
         Err(err) => {
@@ -47,11 +48,7 @@ async fn handle_client_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::Re
     match cmd {
         cli::FileCommand::Add { file } => {
             trace!("Running FileAdd action");
-            let request = tonic::Request::new(AddFileRequest {
-                file_path: file.to_str().unwrap().to_string(),
-            });
-            let response = client_proxy.client.add_file(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.add_file(file).await?;
         }
         cli::FileCommand::Remove { file } => {
             trace!("Running FileRemove action");
