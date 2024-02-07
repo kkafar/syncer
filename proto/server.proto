@@ -5,14 +5,17 @@ service FileTransfer {
   rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
   rpc AddFile (AddFileRequest) returns (AddFileResponse);
   rpc RemoveFile (RemoveFileRequest) returns (RemoveFileResponse);
+
+  rpc AddGroup (AddGroupRequest) returns (AddGroupResponse);
+  rpc RemoveGroup (RemoveGroupRequest) returns (RemoveGroupResponse);
 }
 
 message ListFilesRequest {
-  string request = 1; 
+  string request = 1;
 }
 
 message ListFilesResponse {
-  string response = 1; 
+  string response = 1;
 }
 
 message AddFileRequest {
@@ -30,3 +33,21 @@ message RemoveFileRequest {
 message RemoveFileResponse {
   bool success = 1;
 }
+
+message AddGroupRequest {
+  string name = 1;
+  string prefix = 2;
+}
+
+message AddGroupResponse {
+  bool success = 1;
+}
+
+message RemoveGroupRequest {
+  string name = 1;
+}
+
+message RemoveGroupResponse {
+  bool success = 1;
+}
+

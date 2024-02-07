@@ -11,8 +11,9 @@ use tonic::{Request, Status};
 
 use self::server_stub::file_transfer_server::FileTransfer;
 use self::server_stub::{
-    AddFileRequest, AddFileResponse, ListFilesRequest, ListFilesResponse, RemoveFileRequest,
-    RemoveFileResponse,
+    AddFileRequest, AddFileResponse, AddGroupRequest, AddGroupResponse, ListFilesRequest,
+    ListFilesResponse, RemoveFileRequest, RemoveFileResponse, RemoveGroupRequest,
+    RemoveGroupResponse,
 };
 use crate::context::Context;
 
@@ -80,6 +81,26 @@ impl FileTransfer for ServerProxy {
     ) -> Result<tonic::Response<RemoveFileResponse>, Status> {
         info!("Received client RemoveFile request {request:?}");
         let reply = RemoveFileResponse { success: true };
+
+        Ok(tonic::Response::new(reply))
+    }
+
+    async fn add_group(
+        &self,
+        request: Request<AddGroupRequest>,
+    ) -> Result<tonic::Response<AddGroupResponse>, Status> {
+        info!("Received client AddGroup request {request:?}");
+        let reply = AddGroupResponse { success: true };
+
+        Ok(tonic::Response::new(reply))
+    }
+
+    async fn remove_group(
+        &self,
+        request: Request<RemoveGroupRequest>,
+    ) -> Result<tonic::Response<RemoveGroupResponse>, Status> {
+        info!("Received client RemoveGroup request {request:?}");
+        let reply = RemoveGroupResponse { success: true };
 
         Ok(tonic::Response::new(reply))
     }

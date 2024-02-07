@@ -4,10 +4,10 @@ use std::path::PathBuf;
 
 use anyhow::{self};
 use client_stub::file_transfer_client::FileTransferClient;
+use error::{AddFileError, AddGroupError};
 use log::{debug, error, info};
-use error::AddFileError;
 
-use crate::client::client_stub::AddFileRequest;
+use crate::client::client_stub::{AddFileRequest, AddGroupRequest};
 
 pub mod client_stub {
     tonic::include_proto!("syncer");
@@ -45,10 +45,39 @@ impl SyncerClientProxy {
         match result {
             Ok(response) => {
                 info!("Server response: {response:?}");
-            },
+            }
             Err(err) => {
                 error!("Request failed with status {err:?}");
                 return Err(AddFileError::RequestFailed);
+            }
+        };
+
+        Ok(())
+    }
+
+    pub async fn add_group(&mut self, name: String, prefix: PathBuf) -> Result<(), AddGroupError> {
+        let abs_prefix = if prefix.is_absolute() {
+            prefix
+        } else {
+            crate::util::path::absolute_path(prefix).unwrap()
+        };
+
+        debug!("Resolved absolute path: {abs_prefix:?}");
+
+        let request = tonic::Request::new(AddGroupRequest {
+            name,
+            prefix: abs_prefix.to_str().unwrap().to_owned(),
+        });
+
+        let result = self.client.add_group(request).await;
+
+        match result {
+            Ok(response) => {
+                info!("Server response: {response:?}");
+            }
+            Err(err) => {
+                error!("Request failed with status {err:?}");
+                return Err(AddGroupError::RequestFailed);
             }
         };
 

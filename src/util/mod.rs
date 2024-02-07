@@ -1,5 +1,8 @@
 pub mod path {
-    use std::{io, path::{Path, PathBuf}};
+    use std::{
+        io,
+        path::{Path, PathBuf},
+    };
 
     use path_clean::PathClean;
 
@@ -9,9 +12,9 @@ pub mod path {
             path.to_path_buf()
         } else {
             std::env::current_dir()?.join(path)
-        }.clean();
+        }
+        .clean();
 
         Ok(abs_path)
     }
 }
-

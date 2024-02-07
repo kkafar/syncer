@@ -17,6 +17,27 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 
 use crate::client::client_stub::{AddFileRequest, ListFilesRequest, RemoveFileRequest};
 
+async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
+    let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
+        Ok(client_proxy) => client_proxy,
+        Err(err) => {
+            error!("Creating connect to server failed with error: ${err:?}");
+            return Err(err);
+        }
+    };
+
+    match cmd {
+        cli::GroupCommand::Add { name, prefix } => {
+            trace!("Running GroupAdd action");
+        },
+        cli::GroupCommand::Remove { name } => {
+            trace!("Running GroupRemove action");
+        },
+    }
+
+    Ok(())
+}
+
 async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
     // When running server we have to make sure that the database exists
     let mut db_proxy = DatabaseProxy::new(ctx.app_dirs.get_data_dir().join("server.db3"))?;
@@ -25,6 +46,7 @@ async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyh
 
     match cmd {
         cli::ServerCommand::Start => {
+            trace!("Running ServerStart action");
             ServerProxy::new(ctx, SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8080))
                 .run()
                 .await?;
@@ -36,7 +58,7 @@ async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyh
     Ok(())
 }
 
-async fn handle_client_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
+async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
     let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
         Ok(client_proxy) => client_proxy,
         Err(err) => {
@@ -94,7 +116,8 @@ async fn main() -> anyhow::Result<()> {
     let ctx = Context::new(app_dirs, None);
 
     match cli.command {
-        cli::Command::File(subcmd) => handle_client_action(ctx, subcmd.command).await?,
+        cli::Command::Group(subcmd) => handle_group_action(ctx, subcmd.command).await?,
+        cli::Command::File(subcmd) => handle_file_action(ctx, subcmd.command).await?,
         cli::Command::Server(subcmd) => handle_server_action(ctx, subcmd.command).await?,
     };
 

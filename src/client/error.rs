@@ -5,6 +5,16 @@ pub enum AddFileError {
     #[error("File does not exist")]
     FileNotExists,
 
-    #[error("Request failed")]
+    #[error("Network request failed")]
+    RequestFailed,
+}
+
+#[derive(Debug, Error)]
+pub enum AddGroupError {
+    #[error("Group with name {0} already exists")]
+    GroupExists(String),
+
+
+    #[error("Network request failed")]
     RequestFailed,
 }
