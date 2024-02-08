@@ -43,6 +43,7 @@ pub struct ServerArgs {
 pub enum GroupCommand {
     Add { name: String, prefix: PathBuf },
     Remove { name: String },
+    List,
 }
 
 #[derive(Debug, Subcommand)]

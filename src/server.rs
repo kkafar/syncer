@@ -3,15 +3,19 @@ pub mod db;
 use log::info;
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use std::net::SocketAddrV4;
 use std::path::PathBuf;
+use std::pin::Pin;
 use tonic::{Request, Status};
+use tokio_stream::{Stream, StreamExt};
 
 use self::server_stub::file_transfer_server::FileTransfer;
 use self::server_stub::{
     AddFileRequest, AddFileResponse, AddGroupRequest, AddGroupResponse, ListFilesRequest,
     ListFilesResponse, RemoveFileRequest, RemoveFileResponse, RemoveGroupRequest,
-    RemoveGroupResponse,
+    RemoveGroupResponse, ListGroupsResponse, ListGroupsRequest,
 };
 use crate::context::Context;
 
@@ -47,6 +51,8 @@ impl ServerProxy {
 
 #[tonic::async_trait]
 impl FileTransfer for ServerProxy {
+    type ListGroupsStream = Pin<Box<dyn Stream<Item = Result<ListGroupsResponse, Status>> + Send>>;
+
     async fn list_files(
         &self,
         request: Request<ListFilesRequest>,
@@ -121,4 +127,35 @@ impl FileTransfer for ServerProxy {
         };
         Ok(tonic::Response::new(reply))
     }
+
+    async fn list_groups(&self, request: Request<ListGroupsRequest>) -> Result<tonic::Response<Self::ListGroupsStream>, Status> {
+        info!("Received client ListGroups request {request:?}");
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.list_groups();
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        let res_vec = result.unwrap();
+        let (tx, rx) = mpsc::channel(res_vec.len() + 1);
+
+        let mut reply_stream = Box::pin(tokio_stream::iter(res_vec.into_iter().map(|name| ListGroupsResponse { group_name: name })));
+
+        tokio::spawn(async move {
+            while let Some(item) = reply_stream.next().await {
+                match tx.send(Result::<_, Status>::Ok(item)).await {
+                    Ok(_) => {
+
+                    }
+                    Err(_item) => {
+                        break;
+                    }
+                }
+            }
+        });
+
+        let output_stream = ReceiverStream::new(rx);
+        Ok(tonic::Response::new(Box::pin(output_stream) as Self::ListGroupsStream))
+    }
+
 }

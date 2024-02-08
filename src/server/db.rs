@@ -81,4 +81,14 @@ impl DatabaseProxy {
             }
         }
     }
+
+    pub fn list_groups(&mut self) -> anyhow::Result<Vec<String>> {
+
+        let mut stmt = self.conn.prepare("SELECT name FROM groups")?;
+        let rows = stmt.query_map([], |d| {
+            d.get::<usize, String>(0)
+        })?.filter_map(Result::ok);
+
+        Ok(rows.collect())
+    }
 }

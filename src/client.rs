@@ -5,14 +5,15 @@ use std::path::PathBuf;
 use anyhow::{self};
 use client_stub::file_transfer_client::FileTransferClient;
 use error::{AddFileError, AddGroupError, RemoveFileError};
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
+use tokio_stream::StreamExt;
 
 use crate::client::client_stub::{
     AddFileRequest, AddGroupRequest, ListFilesRequest, RemoveFileRequest,
 };
 
 use self::{
-    client_stub::RemoveGroupRequest,
+    client_stub::{ListGroupsRequest, ListGroupsResponse, RemoveGroupRequest},
     error::{ListFilesError, RemoveGroupError},
 };
 
@@ -145,5 +146,34 @@ impl SyncerClientProxy {
         };
 
         Ok(())
+    }
+
+    pub async fn list_groups(&mut self) -> Result<Vec<String>, ()> {
+        let mut buffer = Vec::new();
+        let request = ListGroupsRequest{};
+
+        let result = self.client.list_groups(request).await;
+
+        let response = match result {
+            Ok(res) => res,
+            Err(err) => {
+                error!("Request failed with status {err:?}");
+                return Err(());
+            }
+        };
+
+        let mut response_stream = response.into_inner();
+
+        while let Some(result) = response_stream.next().await {
+            match result {
+                Ok(ListGroupsResponse { group_name }) => {
+                    buffer.push(group_name);
+                }
+                Err(err) => {
+                    warn!("Request failed with status {err:?}");
+                }
+            };
+        }
+        Ok(buffer)
     }
 }
