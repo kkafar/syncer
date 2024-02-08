@@ -44,7 +44,7 @@ async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyh
     // When running server we have to make sure that the database exists
     let mut db_proxy = DatabaseProxy::new(ctx.app_dirs.get_data_dir().join("server.db3"))?;
     db_proxy.ensure_tables_exist();
-    ctx.db = Some(db_proxy);
+    ctx.inject_db(db_proxy);
 
     match cmd {
         cli::ServerCommand::Start => {

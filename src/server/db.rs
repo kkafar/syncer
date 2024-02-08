@@ -1,7 +1,11 @@
+pub mod model;
+
 use core::panic;
-use log::error;
-use rusqlite::Connection;
+use log::{error, info, warn};
+use rusqlite::{ffi::sqlite3_db_status, params, Connection};
 use std::path::{Path, PathBuf};
+
+use self::model::GroupsRecord;
 
 pub struct DatabaseProxy {
     path: PathBuf,
@@ -41,4 +45,23 @@ impl DatabaseProxy {
             panic!("Creating file table failed with error {err:?}");
         }
     }
+
+    pub fn insert_group(&mut self, record: GroupsRecord) -> anyhow::Result<()> {
+        let result = self.conn.execute(
+            "INSERT INTO groups (name, prefix) VALUES (?1, ?2);",
+            params![record.name, record.prefix]);
+
+        match result {
+            Ok(count) => {
+                info!("Group successfully inserted, altered {count} rows");
+            },
+            Err(err) => {
+                warn!("Group insertion failed with error {err:?}");
+                return Err(anyhow::Error::new(err));
+            }
+        }
+
+        Ok(())
+    }
+
 }
