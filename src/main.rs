@@ -33,6 +33,7 @@ async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow
         },
         cli::GroupCommand::Remove { name } => {
             trace!("Running GroupRemove action");
+            client_proxy.remove_group(name).await?;
         },
     }
 
@@ -75,19 +76,11 @@ async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Res
         }
         cli::FileCommand::Remove { file } => {
             trace!("Running FileRemove action");
-            let request = tonic::Request::new(RemoveFileRequest {
-                file_path: file.to_str().unwrap().to_string(),
-            });
-            let response = client_proxy.client.remove_file(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.remove_file(file);
         }
         cli::FileCommand::List => {
             trace!("Running FileList action");
-            let request = tonic::Request::new(ListFilesRequest {
-                request: "This is request content".into(),
-            });
-            let response = client_proxy.client.list_files(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.list_files(None);
         }
     };
     Ok(())
@@ -95,21 +88,6 @@ async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Res
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // let content = include_str!("../data/input01.txt");
-    //
-    // println!("{content}");
-    // let digest = md5::compute(content.as_bytes());
-    // println!("{digest:?}");
-    //
-    // let Ok(binary_content) = fs::read(path::Path::new("data/input01.txt")) else {
-    //     return;
-    // };
-    //
-    // println!("{binary_content:?}");
-    // let binary_digest = md5::compute(binary_content);
-    // println!("{binary_digest:?}");
-    //
-
     let cli = cli::Cli::parse();
     let _ = logging::init();
 

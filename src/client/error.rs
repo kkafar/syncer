@@ -18,3 +18,22 @@ pub enum AddGroupError {
     #[error("Network request failed")]
     RequestFailed,
 }
+
+#[derive(Debug, Error)]
+pub enum RemoveGroupError {
+    #[error("Network request failed")]
+    RequestFailed,
+}
+
+#[derive(Debug, Error)]
+pub enum RemoveFileError {
+    #[error("Network request failed")]
+    RequestFailed,
+}
+
+
+#[derive(Debug, Error)]
+pub enum ListFilesError {
+    #[error("Network request failed")]
+    RequestFailed,
+}
