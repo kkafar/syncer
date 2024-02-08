@@ -8,6 +8,7 @@ service FileTransfer {
 
   rpc AddGroup (AddGroupRequest) returns (AddGroupResponse);
   rpc RemoveGroup (RemoveGroupRequest) returns (RemoveGroupResponse);
+  rpc ListGroups (ListGroupsRequest) returns (stream ListGroupsResponse);
 }
 
 message ListFilesRequest {
@@ -49,5 +50,12 @@ message RemoveGroupRequest {
 
 message RemoveGroupResponse {
   bool success = 1;
+}
+
+message ListGroupsRequest {
+}
+
+message ListGroupsResponse {
+  string group_name = 1;
 }
 
