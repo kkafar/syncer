@@ -5,14 +5,13 @@ use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
 use std::net::SocketAddrV4;
 use std::path::PathBuf;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use tonic::{Request, Status};
 
 use self::server_stub::file_transfer_server::FileTransfer;
 use self::server_stub::{
-    AddFileRequest, AddFileResponse, ListFilesRequest, ListFilesResponse, RemoveFileRequest,
-    RemoveFileResponse,
+    AddFileRequest, AddFileResponse, AddGroupRequest, AddGroupResponse, ListFilesRequest,
+    ListFilesResponse, RemoveFileRequest, RemoveFileResponse, RemoveGroupRequest,
+    RemoveGroupResponse,
 };
 use crate::context::Context;
 
@@ -26,16 +25,13 @@ pub struct ServerDescription {
 }
 
 pub struct ServerProxy {
-    ctx: Arc<Mutex<Context>>,
+    ctx: Context,
     sck_addr: SocketAddrV4,
 }
 
 impl ServerProxy {
     pub fn new(ctx: Context, sck_addr: SocketAddrV4) -> Self {
-        Self {
-            ctx: Arc::new(Mutex::new(ctx)),
-            sck_addr,
-        }
+        Self { ctx, sck_addr }
     }
 
     pub async fn run(self) -> anyhow::Result<()> {
@@ -81,6 +77,48 @@ impl FileTransfer for ServerProxy {
         info!("Received client RemoveFile request {request:?}");
         let reply = RemoveFileResponse { success: true };
 
+        Ok(tonic::Response::new(reply))
+    }
+
+    async fn add_group(
+        &self,
+        request: Request<AddGroupRequest>,
+    ) -> Result<tonic::Response<AddGroupResponse>, Status> {
+        info!("Received client AddGroup request {request:?}");
+
+        let data = request.into_inner();
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.insert_group(db::model::GroupsRecord {
+            name: data.name,
+            prefix: data.prefix,
+        });
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        let reply = AddGroupResponse {
+            success: result.is_ok(),
+        };
+
+        Ok(tonic::Response::new(reply))
+    }
+
+    async fn remove_group(
+        &self,
+        request: Request<RemoveGroupRequest>,
+    ) -> Result<tonic::Response<RemoveGroupResponse>, Status> {
+        info!("Received client RemoveGroup request {request:?}");
+
+        let data = request.into_inner();
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.delete_group(data.name);
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        let reply = RemoveGroupResponse {
+            success: result.is_ok(),
+        };
         Ok(tonic::Response::new(reply))
     }
 }

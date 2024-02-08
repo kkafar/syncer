@@ -10,8 +10,17 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    Group(GroupArgs),
     File(FileArgs),
     Server(ServerArgs),
+}
+
+#[derive(Debug, Args)]
+#[command(args_conflicts_with_subcommands = true)]
+#[command(flatten_help = true)]
+pub struct GroupArgs {
+    #[command(subcommand)]
+    pub command: GroupCommand,
 }
 
 #[derive(Debug, Args)]
@@ -31,15 +40,15 @@ pub struct ServerArgs {
 }
 
 #[derive(Debug, Subcommand)]
+pub enum GroupCommand {
+    Add { name: String, prefix: PathBuf },
+    Remove { name: String },
+}
+
+#[derive(Debug, Subcommand)]
 pub enum FileCommand {
-    Add {
-        #[arg(short, long)]
-        file: PathBuf,
-    },
-    Remove {
-        #[arg(short, long)]
-        file: PathBuf,
-    },
+    Add { file: PathBuf },
+    Remove { file: PathBuf },
     List,
 }
 

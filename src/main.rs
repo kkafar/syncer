@@ -4,6 +4,7 @@ mod context;
 mod env;
 mod logging;
 mod server;
+mod util;
 
 use clap::Parser;
 use client::SyncerClientProxy;
@@ -16,14 +17,38 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 
 use crate::client::client_stub::{AddFileRequest, ListFilesRequest, RemoveFileRequest};
 
+async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
+    let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
+        Ok(client_proxy) => client_proxy,
+        Err(err) => {
+            error!("Creating connect to server failed with error: ${err:?}");
+            return Err(err);
+        }
+    };
+
+    match cmd {
+        cli::GroupCommand::Add { name, prefix } => {
+            trace!("Running GroupAdd action");
+            client_proxy.add_group(name, prefix).await?;
+        }
+        cli::GroupCommand::Remove { name } => {
+            trace!("Running GroupRemove action");
+            client_proxy.remove_group(name).await?;
+        }
+    }
+
+    Ok(())
+}
+
 async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
     // When running server we have to make sure that the database exists
     let mut db_proxy = DatabaseProxy::new(ctx.app_dirs.get_data_dir().join("server.db3"))?;
     db_proxy.ensure_tables_exist();
-    ctx.db = Some(db_proxy);
+    ctx.inject_db(db_proxy);
 
     match cmd {
         cli::ServerCommand::Start => {
+            trace!("Running ServerStart action");
             ServerProxy::new(ctx, SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8080))
                 .run()
                 .await?;
@@ -35,7 +60,7 @@ async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyh
     Ok(())
 }
 
-async fn handle_client_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
+async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
     let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
         Ok(client_proxy) => client_proxy,
         Err(err) => {
@@ -47,27 +72,15 @@ async fn handle_client_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::Re
     match cmd {
         cli::FileCommand::Add { file } => {
             trace!("Running FileAdd action");
-            let request = tonic::Request::new(AddFileRequest {
-                file_path: file.to_str().unwrap().to_string(),
-            });
-            let response = client_proxy.client.add_file(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.add_file(file).await?;
         }
         cli::FileCommand::Remove { file } => {
             trace!("Running FileRemove action");
-            let request = tonic::Request::new(RemoveFileRequest {
-                file_path: file.to_str().unwrap().to_string(),
-            });
-            let response = client_proxy.client.remove_file(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.remove_file(file);
         }
         cli::FileCommand::List => {
             trace!("Running FileList action");
-            let request = tonic::Request::new(ListFilesRequest {
-                request: "This is request content".into(),
-            });
-            let response = client_proxy.client.list_files(request).await?;
-            info!("Server response: {response:?}");
+            let _result = client_proxy.list_files(None);
         }
     };
     Ok(())
@@ -75,21 +88,6 @@ async fn handle_client_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::Re
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // let content = include_str!("../data/input01.txt");
-    //
-    // println!("{content}");
-    // let digest = md5::compute(content.as_bytes());
-    // println!("{digest:?}");
-    //
-    // let Ok(binary_content) = fs::read(path::Path::new("data/input01.txt")) else {
-    //     return;
-    // };
-    //
-    // println!("{binary_content:?}");
-    // let binary_digest = md5::compute(binary_content);
-    // println!("{binary_digest:?}");
-    //
-
     let cli = cli::Cli::parse();
     let _ = logging::init();
 
@@ -97,7 +95,8 @@ async fn main() -> anyhow::Result<()> {
     let ctx = Context::new(app_dirs, None);
 
     match cli.command {
-        cli::Command::File(subcmd) => handle_client_action(ctx, subcmd.command).await?,
+        cli::Command::Group(subcmd) => handle_group_action(ctx, subcmd.command).await?,
+        cli::Command::File(subcmd) => handle_file_action(ctx, subcmd.command).await?,
         cli::Command::Server(subcmd) => handle_server_action(ctx, subcmd.command).await?,
     };
 
