@@ -7,9 +7,14 @@ use client_stub::file_transfer_client::FileTransferClient;
 use error::{AddFileError, AddGroupError, RemoveFileError};
 use log::{debug, error, info};
 
-use crate::client::client_stub::{AddFileRequest, AddGroupRequest, ListFilesRequest, RemoveFileRequest};
+use crate::client::client_stub::{
+    AddFileRequest, AddGroupRequest, ListFilesRequest, RemoveFileRequest,
+};
 
-use self::{client_stub::RemoveGroupRequest, error::{ListFilesError, RemoveGroupError}};
+use self::{
+    client_stub::RemoveGroupRequest,
+    error::{ListFilesError, RemoveGroupError},
+};
 
 pub mod client_stub {
     tonic::include_proto!("syncer");
@@ -125,9 +130,7 @@ impl SyncerClientProxy {
     }
 
     pub async fn remove_group(&mut self, name: String) -> Result<(), RemoveGroupError> {
-        let request = tonic::Request::new(RemoveGroupRequest {
-            name,
-        });
+        let request = tonic::Request::new(RemoveGroupRequest { name });
 
         let result = self.client.remove_group(request).await;
 
@@ -144,4 +147,3 @@ impl SyncerClientProxy {
         Ok(())
     }
 }
-

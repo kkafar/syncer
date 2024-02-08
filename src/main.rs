@@ -30,11 +30,11 @@ async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow
         cli::GroupCommand::Add { name, prefix } => {
             trace!("Running GroupAdd action");
             client_proxy.add_group(name, prefix).await?;
-        },
+        }
         cli::GroupCommand::Remove { name } => {
             trace!("Running GroupRemove action");
             client_proxy.remove_group(name).await?;
-        },
+        }
     }
 
     Ok(())

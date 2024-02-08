@@ -49,13 +49,14 @@ impl DatabaseProxy {
     pub fn insert_group(&mut self, record: GroupsRecord) -> anyhow::Result<()> {
         let result = self.conn.execute(
             "INSERT INTO groups (name, prefix) VALUES (?1, ?2);",
-            params![record.name, record.prefix]);
+            params![record.name, record.prefix],
+        );
 
         match result {
             Ok(count) => {
                 info!("Group successfully inserted, altered {count} rows");
                 Ok(())
-            },
+            }
             Err(err) => {
                 warn!("Group insertion failed with error {err:?}");
                 Err(anyhow::Error::new(err))
@@ -66,16 +67,18 @@ impl DatabaseProxy {
     pub fn delete_group(&mut self, name: impl AsRef<str>) -> anyhow::Result<()> {
         let name = name.as_ref();
 
-        match self.conn.execute("DELETE FROM groups WHERE name = ?1", [name]) {
+        match self
+            .conn
+            .execute("DELETE FROM groups WHERE name = ?1", [name])
+        {
             Ok(count) => {
                 info!("Group successfully inserted, altered {count} rows");
                 Ok(())
-            },
+            }
             Err(err) => {
                 warn!("Group deletion failed with error {err:?}");
                 Err(anyhow::Error::new(err))
             }
         }
     }
-
 }

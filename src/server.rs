@@ -31,10 +31,7 @@ pub struct ServerProxy {
 
 impl ServerProxy {
     pub fn new(ctx: Context, sck_addr: SocketAddrV4) -> Self {
-        Self {
-            ctx,
-            sck_addr,
-        }
+        Self { ctx, sck_addr }
     }
 
     pub async fn run(self) -> anyhow::Result<()> {
@@ -92,11 +89,16 @@ impl FileTransfer for ServerProxy {
         let data = request.into_inner();
         let mut guard = self.ctx.db.lock().unwrap();
         let mut db = guard.take().unwrap();
-        let result = db.insert_group(db::model::GroupsRecord { name: data.name, prefix: data.prefix });
+        let result = db.insert_group(db::model::GroupsRecord {
+            name: data.name,
+            prefix: data.prefix,
+        });
         guard.replace(db);
         std::mem::drop(guard);
 
-        let reply = AddGroupResponse { success: result.is_ok() };
+        let reply = AddGroupResponse {
+            success: result.is_ok(),
+        };
 
         Ok(tonic::Response::new(reply))
     }
@@ -114,7 +116,9 @@ impl FileTransfer for ServerProxy {
         guard.replace(db);
         std::mem::drop(guard);
 
-        let reply = RemoveGroupResponse { success: result.is_ok() };
+        let reply = RemoveGroupResponse {
+            success: result.is_ok(),
+        };
         Ok(tonic::Response::new(reply))
     }
 }

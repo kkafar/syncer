@@ -11,11 +11,15 @@ pub struct Context {
 
 impl Context {
     pub fn new(app_dirs: AppDirectories, db: Option<DatabaseProxy>) -> Self {
-        Self { app_dirs, db: Arc::new(Mutex::new(db)) }
+        Self {
+            app_dirs,
+            db: Arc::new(Mutex::new(db)),
+        }
     }
 
     pub fn inject_db(&self, db: DatabaseProxy) {
-        self.db.lock()
+        self.db
+            .lock()
             .expect("Error while acquiring lock for db injection")
             .insert(db);
     }
