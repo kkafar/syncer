@@ -5,5 +5,7 @@ CREATE TABLE IF NOT EXISTS files (
     lmtime INTEGER NOT NULL,
     hash TEXT,
     PRIMARY KEY (id),
-    FOREIGN KEY(group_id) REFERENCES groups(group_id)
+    FOREIGN KEY(group_id) REFERENCES groups(id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE
 );

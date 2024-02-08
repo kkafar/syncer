@@ -54,14 +54,28 @@ impl DatabaseProxy {
         match result {
             Ok(count) => {
                 info!("Group successfully inserted, altered {count} rows");
+                Ok(())
             },
             Err(err) => {
                 warn!("Group insertion failed with error {err:?}");
-                return Err(anyhow::Error::new(err));
+                Err(anyhow::Error::new(err))
             }
         }
+    }
 
-        Ok(())
+    pub fn delete_group(&mut self, name: impl AsRef<str>) -> anyhow::Result<()> {
+        let name = name.as_ref();
+
+        match self.conn.execute("DELETE FROM groups WHERE name = ?1", [name]) {
+            Ok(count) => {
+                info!("Group successfully inserted, altered {count} rows");
+                Ok(())
+            },
+            Err(err) => {
+                warn!("Group deletion failed with error {err:?}");
+                Err(anyhow::Error::new(err))
+            }
+        }
     }
 
 }

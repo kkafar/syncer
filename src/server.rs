@@ -89,11 +89,8 @@ impl FileTransfer for ServerProxy {
     ) -> Result<tonic::Response<AddGroupResponse>, Status> {
         info!("Received client AddGroup request {request:?}");
 
-        let mut success = true;
-
         let data = request.into_inner();
         let mut guard = self.ctx.db.lock().unwrap();
-
         let mut db = guard.take().unwrap();
         let result = db.insert_group(db::model::GroupsRecord { name: data.name, prefix: data.prefix });
         guard.replace(db);
@@ -109,8 +106,15 @@ impl FileTransfer for ServerProxy {
         request: Request<RemoveGroupRequest>,
     ) -> Result<tonic::Response<RemoveGroupResponse>, Status> {
         info!("Received client RemoveGroup request {request:?}");
-        let reply = RemoveGroupResponse { success: true };
 
+        let data = request.into_inner();
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.delete_group(data.name);
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        let reply = RemoveGroupResponse { success: result.is_ok() };
         Ok(tonic::Response::new(reply))
     }
 }
