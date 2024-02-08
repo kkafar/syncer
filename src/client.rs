@@ -150,7 +150,7 @@ impl SyncerClientProxy {
 
     pub async fn list_groups(&mut self) -> Result<Vec<String>, ()> {
         let mut buffer = Vec::new();
-        let request = ListGroupsRequest{};
+        let request = ListGroupsRequest {};
 
         let result = self.client.list_groups(request).await;
 

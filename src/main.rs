@@ -39,11 +39,7 @@ async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow
             trace!("Running GroupList action");
             let result = client_proxy.list_groups().await;
             match result {
-                Ok(group_names) => {
-                    group_names.iter().for_each(
-                        |name| println!("{name}")
-                    )
-                }
+                Ok(group_names) => group_names.iter().for_each(|name| println!("{name}")),
                 Err(err) => {
                     error!("Request failed");
                 }
