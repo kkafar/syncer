@@ -5,7 +5,7 @@ use log::{error, info, warn};
 use rusqlite::{params, Connection};
 use std::path::PathBuf;
 
-use self::model::{GroupsRecord, InsertFileQuery};
+use self::model::{FileRecord, GroupsRecord, InsertFileQuery};
 
 pub struct DatabaseProxy {
     path: PathBuf,
@@ -86,6 +86,15 @@ impl DatabaseProxy {
         let mut stmt = self.conn.prepare("SELECT name, prefix FROM groups")?;
         let rows = stmt
             .query_map([], |row| GroupsRecord::try_from(row))?
+            .filter_map(Result::ok);
+
+        Ok(rows.collect())
+    }
+
+    pub fn list_files(&mut self) -> anyhow::Result<Vec<FileRecord>> {
+        let mut stmt = self.conn.prepare("SELECT group_name, abs_path FROM files")?;
+        let rows = stmt
+            .query_map([], |row| FileRecord::try_from(row))?
             .filter_map(Result::ok);
 
         Ok(rows.collect())

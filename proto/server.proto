@@ -16,7 +16,12 @@ message ListFilesRequest {
 }
 
 message ListFilesResponse {
-  string response = 1;
+  repeated FileRecord files = 1;
+}
+
+message FileRecord {
+  string file_path = 1;
+  string group = 2;
 }
 
 message AddFileRequest {

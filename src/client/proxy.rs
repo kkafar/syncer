@@ -42,6 +42,8 @@ impl SyncerClientProxy {
         match result {
             Ok(response) => {
                 info!("Server response: {response:?}");
+                let data = response.into_inner();
+                data.files.into_iter().for_each(|file| println!("{} {}", file.file_path, file.group));
             }
             Err(err) => {
                 error!("Request failed with status {err:?}");

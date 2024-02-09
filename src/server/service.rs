@@ -58,8 +58,24 @@ impl FileTransfer for ServerProxy {
     ) -> Result<tonic::Response<ListFilesResponse>, Status> {
         info!("Received client ListFiles request {request:?}");
 
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.list_files();
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        if let Err(ref err) = result {
+            warn!("Request execution failed with error: {err:?}");
+            return Err(Status::new(tonic::Code::Unknown, err.to_string()));
+        }
+
+        let file_list = result.unwrap().into_iter().map(|rd| server_stub::FileRecord {
+            file_path: rd.abs_path,
+            group: rd.group_name,
+        }).collect();
+
         let reply = ListFilesResponse {
-            response: "This is an response from server".to_owned(),
+            files: file_list,
         };
 
         Ok(tonic::Response::new(reply))
