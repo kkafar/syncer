@@ -3,7 +3,7 @@ pub mod model;
 use core::panic;
 use log::{error, info, warn};
 use rusqlite::{params, Connection};
-use std::{path::PathBuf, time::SystemTime};
+use std::path::PathBuf;
 
 use self::model::{GroupsRecord, InsertFileQuery};
 
@@ -100,14 +100,13 @@ impl DatabaseProxy {
 
         // We ignore file's hash right now
 
-        let ostrnone: Option<String> = None;
         let result = self.conn.execute(
             "INSERT INTO files (group_name, abs_path, lmtime, hash) VALUES (?1, ?2, ?3, ?4);",
             params![
                 query_data.group_name,
                 query_data.file_path,
                 timestamp,
-                ostrnone
+                None::<String>
             ],
         );
         match result {
