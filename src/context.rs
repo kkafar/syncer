@@ -18,7 +18,8 @@ impl Context {
     }
 
     pub fn inject_db(&self, db: DatabaseProxy) {
-        let _ = self.db
+        let _ = self
+            .db
             .lock()
             .expect("Error while acquiring lock for db injection")
             .insert(db);

@@ -1,179 +1,72 @@
 pub mod error;
+pub mod proxy;
 
-use std::path::PathBuf;
+use crate::cli;
+use crate::client::proxy::SyncerClientProxy;
+use crate::context::Context;
+use crate::server::{db::DatabaseProxy, service::ServerProxy};
+use clap::Parser;
 
-use anyhow::{self};
-use client_stub::file_transfer_client::FileTransferClient;
-use error::{AddFileError, AddGroupError, RemoveFileError};
-use log::{debug, error, info, warn};
-use tokio_stream::StreamExt;
+use anyhow;
+use log::{error, trace};
+use std::net::{Ipv4Addr, SocketAddrV4};
 
-use crate::client::client_stub::{
-    AddFileRequest, AddGroupRequest, ListFilesRequest, RemoveFileRequest,
-};
-
-use self::{
-    client_stub::{ListGroupsRequest, ListGroupsResponse, RemoveGroupRequest},
-    error::{ListFilesError, RemoveGroupError},
-};
-
-pub mod client_stub {
-    tonic::include_proto!("syncer");
-}
-
-pub struct SyncerClientProxy {
-    _server_uri: String,
-    pub client: FileTransferClient<tonic::transport::Channel>,
-}
-
-impl SyncerClientProxy {
-    pub async fn new(server_uri: String) -> anyhow::Result<Self> {
-        anyhow::Ok(Self {
-            _server_uri: server_uri.clone(),
-            client: FileTransferClient::connect(server_uri).await?,
-        })
-    }
-
-    pub async fn list_files(&mut self, _group: Option<String>) -> Result<(), ListFilesError> {
-        let request = tonic::Request::new(ListFilesRequest {
-            request: "This is request content".into(),
-        });
-        let result = self.client.list_files(request).await;
-        match result {
-            Ok(response) => {
-                info!("Server response: {response:?}");
-            }
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(ListFilesError::RequestFailed);
-            }
-        };
-        Ok(())
-    }
-
-    pub async fn add_file(&mut self, file: PathBuf) -> Result<(), AddFileError> {
-        // Let's first make sure that this file exists (should be done here or by server?)
-        let file = crate::util::path::absolute_path(file).unwrap();
-        debug!("Resolved absolute path: {file:?}");
-
-        if !file.is_file() {
-            return Err(AddFileError::FileNotExists);
+pub async fn handle_group_action(_ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
+    let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
+        Ok(client_proxy) => client_proxy,
+        Err(err) => {
+            error!("Creating connect to server failed with error: ${err:?}");
+            return Err(err);
         }
+    };
 
-        let request = tonic::Request::new(AddFileRequest {
-            file_path: file.to_str().unwrap().to_string(),
-        });
-
-        let result = self.client.add_file(request).await;
-        match result {
-            Ok(response) => {
-                info!("Server response: {response:?}");
-            }
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(AddFileError::RequestFailed);
-            }
-        };
-
-        Ok(())
-    }
-
-    pub async fn remove_file(&mut self, file: PathBuf) -> Result<(), RemoveFileError> {
-        let file = crate::util::path::absolute_path(file).unwrap();
-        debug!("Resolved absolute path: {file:?}");
-
-        let request = tonic::Request::new(RemoveFileRequest {
-            file_path: file.to_str().unwrap().to_string(),
-        });
-
-        let result = self.client.remove_file(request).await;
-
-        match result {
-            Ok(response) => {
-                info!("Server response: {response:?}");
-            }
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(RemoveFileError::RequestFailed);
-            }
+    match cmd {
+        cli::GroupCommand::Add { name, prefix } => {
+            trace!("Running GroupAdd action");
+            client_proxy.add_group(name, prefix).await?;
         }
-
-        Ok(())
-    }
-
-    pub async fn add_group(&mut self, name: String, prefix: PathBuf) -> Result<(), AddGroupError> {
-        let abs_prefix = if prefix.is_absolute() {
-            prefix
-        } else {
-            crate::util::path::absolute_path(prefix).unwrap()
-        };
-
-        debug!("Resolved absolute path: {abs_prefix:?}");
-
-        let request = tonic::Request::new(AddGroupRequest {
-            name,
-            prefix: abs_prefix.to_str().unwrap().to_owned(),
-        });
-
-        let result = self.client.add_group(request).await;
-
-        match result {
-            Ok(response) => {
-                info!("Server response: {response:?}");
-            }
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(AddGroupError::RequestFailed);
-            }
-        };
-
-        Ok(())
-    }
-
-    pub async fn remove_group(&mut self, name: String) -> Result<(), RemoveGroupError> {
-        let request = tonic::Request::new(RemoveGroupRequest { name });
-
-        let result = self.client.remove_group(request).await;
-
-        match result {
-            Ok(response) => {
-                info!("Server response: {response:?}");
-            }
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(RemoveGroupError::RequestFailed);
-            }
-        };
-
-        Ok(())
-    }
-
-    pub async fn list_groups(&mut self) -> Result<Vec<String>, ()> {
-        let mut buffer = Vec::new();
-        let request = ListGroupsRequest {};
-
-        let result = self.client.list_groups(request).await;
-
-        let response = match result {
-            Ok(res) => res,
-            Err(err) => {
-                error!("Request failed with status {err:?}");
-                return Err(());
-            }
-        };
-
-        let mut response_stream = response.into_inner();
-
-        while let Some(result) = response_stream.next().await {
+        cli::GroupCommand::Remove { name } => {
+            trace!("Running GroupRemove action");
+            client_proxy.remove_group(name).await?;
+        }
+        cli::GroupCommand::List => {
+            trace!("Running GroupList action");
+            let result = client_proxy.list_groups().await;
             match result {
-                Ok(ListGroupsResponse { group_name }) => {
-                    buffer.push(group_name);
+                Ok(group_names) => group_names.iter().for_each(|name| println!("{name}")),
+                Err(_err) => {
+                    error!("Request failed");
                 }
-                Err(err) => {
-                    warn!("Request failed with status {err:?}");
-                }
-            };
+            }
         }
-        Ok(buffer)
     }
+
+    Ok(())
 }
+
+pub async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow::Result<()> {
+    let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
+        Ok(client_proxy) => client_proxy,
+        Err(err) => {
+            error!("Creating connect to server failed with error: ${err:?}");
+            return Err(err);
+        }
+    };
+
+    match cmd {
+        cli::FileCommand::Add { file } => {
+            trace!("Running FileAdd action");
+            let _result = client_proxy.add_file(file).await?;
+        }
+        cli::FileCommand::Remove { file } => {
+            trace!("Running FileRemove action");
+            let _result = client_proxy.remove_file(file);
+        }
+        cli::FileCommand::List => {
+            trace!("Running FileList action");
+            let _result = client_proxy.list_files(None);
+        }
+    };
+    Ok(())
+}
+
