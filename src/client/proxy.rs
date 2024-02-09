@@ -1,7 +1,10 @@
 use std::path::PathBuf;
 
-use crate::client::error::{
-    AddFileError, AddGroupError, ListFilesError, RemoveFileError, RemoveGroupError,
+use crate::{
+    client::error::{
+        AddFileError, AddGroupError, ListFilesError, RemoveFileError, RemoveGroupError,
+    },
+    server::db::model::GroupsRecord,
 };
 use anyhow;
 use client_stub::file_transfer_client::FileTransferClient;
@@ -145,7 +148,7 @@ impl SyncerClientProxy {
         Ok(())
     }
 
-    pub async fn list_groups(&mut self) -> Result<Vec<String>, ()> {
+    pub async fn list_groups(&mut self) -> Result<Vec<GroupsRecord>, ()> {
         let mut buffer = Vec::new();
         let request = ListGroupsRequest {};
 
@@ -163,8 +166,14 @@ impl SyncerClientProxy {
 
         while let Some(result) = response_stream.next().await {
             match result {
-                Ok(ListGroupsResponse { group_name }) => {
-                    buffer.push(group_name);
+                Ok(ListGroupsResponse {
+                    group_name,
+                    group_prefix,
+                }) => {
+                    buffer.push(GroupsRecord {
+                        name: group_name,
+                        prefix: group_prefix,
+                    });
                 }
                 Err(err) => {
                     warn!("Request failed with status {err:?}");
