@@ -12,12 +12,11 @@ use context::Context;
 use server::{db::DatabaseProxy, ServerProxy};
 
 use anyhow;
-use log::{error, info, trace};
+use log::{error, trace};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
-use crate::client::client_stub::{AddFileRequest, ListFilesRequest, RemoveFileRequest};
 
-async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
+async fn handle_group_action(_ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
     let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
         Ok(client_proxy) => client_proxy,
         Err(err) => {
@@ -40,7 +39,7 @@ async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow
             let result = client_proxy.list_groups().await;
             match result {
                 Ok(group_names) => group_names.iter().for_each(|name| println!("{name}")),
-                Err(err) => {
+                Err(_err) => {
                     error!("Request failed");
                 }
             }
@@ -50,7 +49,7 @@ async fn handle_group_action(mut ctx: Context, cmd: cli::GroupCommand) -> anyhow
     Ok(())
 }
 
-async fn handle_server_action(mut ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
+async fn handle_server_action(ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
     // When running server we have to make sure that the database exists
     let mut db_proxy = DatabaseProxy::new(ctx.app_dirs.get_data_dir().join("server.db3"))?;
     db_proxy.ensure_tables_exist();

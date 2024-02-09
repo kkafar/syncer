@@ -2,8 +2,8 @@ pub mod model;
 
 use core::panic;
 use log::{error, info, warn};
-use rusqlite::{ffi::sqlite3_db_status, params, Connection};
-use std::path::{Path, PathBuf};
+use rusqlite::{params, Connection};
+use std::path::PathBuf;
 
 use self::model::GroupsRecord;
 
