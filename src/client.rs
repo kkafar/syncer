@@ -77,7 +77,9 @@ async fn handle_group_list_action(
     trace!("Running GroupList action");
     let result = client.list_groups().await;
     match result {
-        Ok(records) => records.iter().for_each(|rd| println!("{} {}", rd.name, rd.prefix)),
+        Ok(records) => records
+            .iter()
+            .for_each(|rd| println!("{} {}", rd.name, rd.prefix)),
         Err(_err) => {
             error!("Request failed");
         }

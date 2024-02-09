@@ -1,8 +1,11 @@
 use std::path::PathBuf;
 
-use crate::{client::error::{
-    AddFileError, AddGroupError, ListFilesError, RemoveFileError, RemoveGroupError,
-}, server::db::model::GroupsRecord};
+use crate::{
+    client::error::{
+        AddFileError, AddGroupError, ListFilesError, RemoveFileError, RemoveGroupError,
+    },
+    server::db::model::GroupsRecord,
+};
 use anyhow;
 use client_stub::file_transfer_client::FileTransferClient;
 use log::{debug, error, info, warn};
@@ -163,8 +166,14 @@ impl SyncerClientProxy {
 
         while let Some(result) = response_stream.next().await {
             match result {
-                Ok(ListGroupsResponse { group_name, group_prefix }) => {
-                    buffer.push(GroupsRecord{ name: group_name, prefix: group_prefix });
+                Ok(ListGroupsResponse {
+                    group_name,
+                    group_prefix,
+                }) => {
+                    buffer.push(GroupsRecord {
+                        name: group_name,
+                        prefix: group_prefix,
+                    });
                 }
                 Err(err) => {
                     warn!("Request failed with status {err:?}");

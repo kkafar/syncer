@@ -141,11 +141,12 @@ impl FileTransfer for ServerProxy {
         let res_vec = result.unwrap();
         let (tx, rx) = mpsc::channel(res_vec.len() + 1);
 
-        let mut reply_stream = Box::pin(tokio_stream::iter(
-            res_vec
-                .into_iter()
-                .map(|rd| ListGroupsResponse { group_name: rd.name, group_prefix: rd.prefix }),
-        ));
+        let mut reply_stream = Box::pin(tokio_stream::iter(res_vec.into_iter().map(|rd| {
+            ListGroupsResponse {
+                group_name: rd.name,
+                group_prefix: rd.prefix,
+            }
+        })));
 
         tokio::spawn(async move {
             while let Some(item) = reply_stream.next().await {

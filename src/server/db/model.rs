@@ -6,7 +6,7 @@ pub struct GroupsRecord {
     pub prefix: String,
 }
 
-impl <'a> TryFrom<&Row<'a>> for GroupsRecord {
+impl<'a> TryFrom<&Row<'a>> for GroupsRecord {
     type Error = rusqlite::Error;
 
     fn try_from(value: &Row) -> Result<Self, Self::Error> {
