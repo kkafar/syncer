@@ -57,11 +57,11 @@ pub async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow:
         }
         cli::FileCommand::Remove { file } => {
             trace!("Running FileRemove action");
-            let _result = client_proxy.remove_file(file);
+            let _result = client_proxy.remove_file(file).await?;
         }
         cli::FileCommand::List => {
             trace!("Running FileList action");
-            let _result = client_proxy.list_files(None);
+            let _result = client_proxy.list_files(None).await?;
         }
     };
     Ok(())
