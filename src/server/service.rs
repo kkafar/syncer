@@ -144,7 +144,7 @@ impl FileTransfer for ServerProxy {
         let mut reply_stream = Box::pin(tokio_stream::iter(
             res_vec
                 .into_iter()
-                .map(|name| ListGroupsResponse { group_name: name }),
+                .map(|rd| ListGroupsResponse { group_name: rd.name, group_prefix: rd.prefix }),
         ));
 
         tokio::spawn(async move {

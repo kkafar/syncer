@@ -82,10 +82,10 @@ impl DatabaseProxy {
         }
     }
 
-    pub fn list_groups(&mut self) -> anyhow::Result<Vec<String>> {
-        let mut stmt = self.conn.prepare("SELECT name FROM groups")?;
+    pub fn list_groups(&mut self) -> anyhow::Result<Vec<GroupsRecord>> {
+        let mut stmt = self.conn.prepare("SELECT name, prefix FROM groups")?;
         let rows = stmt
-            .query_map([], |d| d.get::<usize, String>(0))?
+            .query_map([], |row| GroupsRecord::try_from(row))?
             .filter_map(Result::ok);
 
         Ok(rows.collect())
