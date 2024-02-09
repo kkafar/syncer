@@ -92,7 +92,9 @@ impl DatabaseProxy {
     }
 
     pub fn list_files(&mut self) -> anyhow::Result<Vec<FileRecord>> {
-        let mut stmt = self.conn.prepare("SELECT group_name, abs_path FROM files")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT group_name, abs_path FROM files")?;
         let rows = stmt
             .query_map([], |row| FileRecord::try_from(row))?
             .filter_map(Result::ok);

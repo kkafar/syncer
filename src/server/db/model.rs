@@ -36,7 +36,10 @@ impl<'a> TryFrom<&Row<'a>> for FileRecord {
     fn try_from(value: &Row<'a>) -> Result<Self, Self::Error> {
         let group_name = value.get::<usize, String>(0)?;
         let abs_path = value.get::<usize, String>(1)?;
-        Ok(Self { group_name, abs_path })
+        Ok(Self {
+            group_name,
+            abs_path,
+        })
     }
 }
 

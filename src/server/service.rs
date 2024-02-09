@@ -69,14 +69,16 @@ impl FileTransfer for ServerProxy {
             return Err(Status::new(tonic::Code::Unknown, err.to_string()));
         }
 
-        let file_list = result.unwrap().into_iter().map(|rd| server_stub::FileRecord {
-            file_path: rd.abs_path,
-            group: rd.group_name,
-        }).collect();
+        let file_list = result
+            .unwrap()
+            .into_iter()
+            .map(|rd| server_stub::FileRecord {
+                file_path: rd.abs_path,
+                group: rd.group_name,
+            })
+            .collect();
 
-        let reply = ListFilesResponse {
-            files: file_list,
-        };
+        let reply = ListFilesResponse { files: file_list };
 
         Ok(tonic::Response::new(reply))
     }
