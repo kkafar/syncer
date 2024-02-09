@@ -42,6 +42,10 @@ impl SyncerClientProxy {
         match result {
             Ok(response) => {
                 info!("Server response: {response:?}");
+                let data = response.into_inner();
+                data.files
+                    .into_iter()
+                    .for_each(|file| println!("{} {}", file.file_path, file.group));
             }
             Err(err) => {
                 error!("Request failed with status {err:?}");
@@ -51,7 +55,11 @@ impl SyncerClientProxy {
         Ok(())
     }
 
-    pub async fn add_file(&mut self, file: PathBuf) -> Result<(), AddFileError> {
+    pub async fn add_file(
+        &mut self,
+        file: PathBuf,
+        group_name: String,
+    ) -> Result<(), AddFileError> {
         // Let's first make sure that this file exists (should be done here or by server?)
         let file = crate::util::path::absolute_path(file).unwrap();
         debug!("Resolved absolute path: {file:?}");
@@ -62,6 +70,7 @@ impl SyncerClientProxy {
 
         let request = tonic::Request::new(AddFileRequest {
             file_path: file.to_str().unwrap().to_string(),
+            group_name,
         });
 
         let result = self.client.add_file(request).await;

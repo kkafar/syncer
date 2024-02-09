@@ -48,7 +48,7 @@ pub enum GroupCommand {
 
 #[derive(Debug, Subcommand)]
 pub enum FileCommand {
-    Add { file: PathBuf },
+    Add { file: PathBuf, group_name: String },
     Remove { file: PathBuf },
     List,
 }

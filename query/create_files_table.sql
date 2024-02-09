@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS files (
-    id INTEGER AUTO_INCREMENT,
-    group_id INTEGER NOT NULL,
+    group_name INTEGER NOT NULL,
     abs_path TEXT NOT NULL,
     lmtime INTEGER NOT NULL,
     hash TEXT,
-    PRIMARY KEY (id),
-    FOREIGN KEY(group_id) REFERENCES groups(id)
+    PRIMARY KEY (group_name, abs_path),
+    FOREIGN KEY(group_name) REFERENCES groups(name)
       ON UPDATE CASCADE
       ON DELETE CASCADE
 );
