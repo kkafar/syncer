@@ -4,12 +4,9 @@ pub mod proxy;
 use crate::cli;
 use crate::client::proxy::SyncerClientProxy;
 use crate::context::Context;
-use crate::server::{db::DatabaseProxy, service::ServerProxy};
-use clap::Parser;
 
 use anyhow;
 use log::{error, trace};
-use std::net::{Ipv4Addr, SocketAddrV4};
 
 pub async fn handle_group_action(_ctx: Context, cmd: cli::GroupCommand) -> anyhow::Result<()> {
     let mut client_proxy = match SyncerClientProxy::new("http://127.0.0.1:8080".into()).await {
