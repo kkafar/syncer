@@ -5,9 +5,9 @@ use anyhow;
 use log::trace;
 use std::net::{Ipv4Addr, SocketAddrV4};
 
+use crate::cli;
 use crate::context::Context;
 use crate::server::db::DatabaseProxy;
-use crate::cli;
 
 pub async fn handle_server_action(ctx: Context, cmd: cli::ServerCommand) -> anyhow::Result<()> {
     // When running server we have to make sure that the database exists
@@ -28,4 +28,3 @@ pub async fn handle_server_action(ctx: Context, cmd: cli::ServerCommand) -> anyh
     };
     Ok(())
 }
-

@@ -6,8 +6,8 @@ mod logging;
 mod server;
 mod util;
 
-use clap::Parser;
 use anyhow;
+use clap::Parser;
 
 use context::Context;
 

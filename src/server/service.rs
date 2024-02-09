@@ -1,4 +1,3 @@
-
 use log::info;
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;

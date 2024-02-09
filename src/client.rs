@@ -69,4 +69,3 @@ pub async fn handle_file_action(_ctx: Context, cmd: cli::FileCommand) -> anyhow:
     };
     Ok(())
 }
-
