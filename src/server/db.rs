@@ -3,9 +3,9 @@ pub mod model;
 use core::panic;
 use log::{error, info, warn};
 use rusqlite::{params, Connection};
-use std::path::PathBuf;
+use std::{path::PathBuf, time::SystemTime};
 
-use self::model::GroupsRecord;
+use self::model::{GroupsRecord, InsertFileQuery};
 
 pub struct DatabaseProxy {
     path: PathBuf,
@@ -89,5 +89,36 @@ impl DatabaseProxy {
             .filter_map(Result::ok);
 
         Ok(rows.collect())
+    }
+
+    pub fn insert_file(&mut self, query_data: InsertFileQuery) -> anyhow::Result<()> {
+        // We need to also find last modified time
+        let last_modified_time = std::fs::metadata(&query_data.file_path)?.modified()?;
+        let timestamp = last_modified_time
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_secs();
+
+        // We ignore file's hash right now
+
+        let ostrnone: Option<String> = None;
+        let result = self.conn.execute(
+            "INSERT INTO files (group_name, abs_path, lmtime, hash) VALUES (?1, ?2, ?3, ?4);",
+            params![
+                query_data.group_name,
+                query_data.file_path,
+                timestamp,
+                ostrnone
+            ],
+        );
+        match result {
+            Ok(count) => {
+                info!("File successfully inserted, altered {count} rows");
+                Ok(())
+            }
+            Err(err) => {
+                warn!("File insertion failed with error {err:?}");
+                Err(anyhow::Error::new(err))
+            }
+        }
     }
 }

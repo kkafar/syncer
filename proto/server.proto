@@ -21,6 +21,7 @@ message ListFilesResponse {
 
 message AddFileRequest {
   string file_path = 1;
+  string group_name = 2;
 }
 
 message AddFileResponse {

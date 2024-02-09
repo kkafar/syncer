@@ -1,4 +1,4 @@
-use log::info;
+use log::{info, warn};
 use serde::{self, Deserialize, Serialize};
 use server_stub::file_transfer_server::FileTransferServer;
 use std::net::SocketAddrV4;
@@ -70,7 +70,24 @@ impl FileTransfer for ServerProxy {
         request: Request<AddFileRequest>,
     ) -> Result<tonic::Response<AddFileResponse>, Status> {
         info!("Received client AddFile request {request:?}");
-        let reply = AddFileResponse { success: true };
+
+        let data = request.into_inner();
+        let mut guard = self.ctx.db.lock().unwrap();
+        let mut db = guard.take().unwrap();
+        let result = db.insert_file(db::model::InsertFileQuery {
+            file_path: data.file_path,
+            group_name: data.group_name,
+        });
+        guard.replace(db);
+        std::mem::drop(guard);
+
+        let reply = match result {
+            Ok(_) => AddFileResponse { success: true },
+            Err(err) => {
+                warn!("Request execution failed with error: {err:?}");
+                AddFileResponse { success: false }
+            }
+        };
 
         Ok(tonic::Response::new(reply))
     }

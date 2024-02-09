@@ -42,7 +42,9 @@ pub async fn handle_file_action(ctx: Context, cmd: cli::FileCommand) -> anyhow::
     };
 
     match cmd {
-        cli::FileCommand::Add { file } => handle_file_add_action(ctx, client_proxy, file).await?,
+        cli::FileCommand::Add { file, group_name } => {
+            handle_file_add_action(ctx, client_proxy, file, group_name).await?
+        }
         cli::FileCommand::Remove { file } => {
             handle_file_remove_action(ctx, client_proxy, file).await?
         }
@@ -91,9 +93,10 @@ async fn handle_file_add_action(
     _ctx: Context,
     mut client: SyncerClientProxy,
     file: PathBuf,
+    group_name: String,
 ) -> anyhow::Result<()> {
     trace!("Running FileAdd action");
-    Ok(client.add_file(file).await?)
+    Ok(client.add_file(file, group_name).await?)
 }
 
 async fn handle_file_remove_action(

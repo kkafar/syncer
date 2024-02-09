@@ -23,3 +23,9 @@ impl<'a> TryFrom<&Row<'a>> for GroupsRecord {
         Ok(Self { name, prefix })
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct InsertFileQuery {
+    pub file_path: String,
+    pub group_name: String,
+}
